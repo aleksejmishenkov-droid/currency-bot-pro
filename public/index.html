@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💱 Конвертер Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <div class="tabs">
+            <button class="tab active" data-tab="converter">💱</button>
+            <button class="tab" data-tab="rates">📊</button>
+            <button class="tab" data-tab="chart">📈</button>
+            <button class="tab" data-tab="portfolio">💼</button>
+            <button class="tab" data-tab="alerts">🔔</button>
+            <button class="tab" data-tab="favorites">⭐</button>
+        </div>
+
+        <!-- КОНВЕРТЕР -->
+        <div class="tab-content active" id="converter">
+            <div class="card">
+                <label class="label">Сумма</label>
+                <input type="number" id="amount" value="1" class="amount-input" inputmode="decimal">
+            </div>
+            <div class="currency-row">
+                <div class="currency-box">
+                    <label class="label">Из</label>
+                    <button class="currency-selector" id="fromBtn">
+                        <span class="currency-icon" id="fromIcon">🇺🇸</span>
+                        <span class="currency-info">
+                            <span class="currency-code" id="fromCode">USD</span>
+                            <span class="currency-name" id="fromName">Доллар США</span>
+                        </span>
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
+                <button class="swap-btn" id="swapBtn">⇄</button>
+                <div class="currency-box">
+                    <label class="label">В</label>
+                    <button class="currency-selector" id="toBtn">
+                        <span class="currency-icon" id="toIcon">🇷🇺</span>
+                        <span class="currency-info">
+                            <span class="currency-code" id="toCode">RUB</span>
+                            <span class="currency-name" id="toName">Российский рубль</span>
+                        </span>
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Результат</div>
+                <div class="result-value" id="result">—</div>
+                <div class="result-rate" id="rateInfo">—</div>
+            </div>
+            <div class="actions">
+                <button class="icon-btn" id="favBtn" title="В избранное">⭐</button>
+                <button class="icon-btn" id="alertBtn" title="Создать уведомление">🔔</button>
+                <button class="icon-btn" id="chartBtn" title="График">📈</button>
+                <button class="icon-btn" id="shareBtn" title="Поделиться">📤</button>
+                <button class="icon-btn" id="copyBtn" title="Копировать">📋</button>
+            </div>
+        </div>
+
+        <!-- КУРСЫ -->
+        <div class="tab-content" id="rates">
+            <div class="search-box">
+                <input type="text" id="ratesSearch" placeholder="🔍 Поиск валюты...">
+            </div>
+            <div class="rates-list" id="ratesList"></div>
+        </div>
+
+        <!-- ГРАФИК -->
+        <div class="tab-content" id="chart">
+            <div class="card">
+                <label class="label">Валюта для графика</label>
+                <button class="currency-selector" id="chartCurrencyBtn">
+                    <span class="currency-icon" id="chartIcon">₿</span>
+                    <span class="currency-info">
+                        <span class="currency-code" id="chartCode">BTC</span>
+                        <span class="currency-name" id="chartName">Bitcoin</span>
+                    </span>
+                    <span class="arrow">▼</span>
+                </button>
+            </div>
+            <div class="period-switch">
+                <button class="period-btn active" data-days="7">7Д</button>
+                <button class="period-btn" data-days="30">30Д</button>
+                <button class="period-btn" data-days="90">90Д</button>
+                <button class="period-btn" data-days="365">1Г</button>
+            </div>
+            <div class="chart-card">
+                <div class="chart-price" id="chartPrice">—</div>
+                <div class="chart-change" id="chartChange">—</div>
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ПОРТФЕЛЬ -->
+        <div class="tab-content" id="portfolio">
+            <div class="portfolio-summary">
+                <div class="label">Общая стоимость</div>
+                <div class="portfolio-total" id="portfolioTotal">$0.00</div>
+                <div class="portfolio-base">
+                    <span>Показывать в:</span>
+                    <select id="portfolioBase">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="RUB">RUB</option>
+                        <option value="BTC">BTC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="USDT">USDT</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-card small">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="portfolio-list" id="portfolioList"></div>
+            <button class="primary-btn" id="addAssetBtn">+ Добавить актив</button>
+        </div>
+
+        <!-- АЛЕРТЫ -->
+        <div class="tab-content" id="alerts">
+            <div class="empty-state" id="alertsEmpty">
+                <div class="empty-icon">🔔</div>
+                <p>Нет уведомлений</p>
+                <small>Создайте алерт через кнопку 🔔 в конвертере</small>
+            </div>
+            <div class="alerts-list" id="alertsList"></div>
+        </div>
+
+        <!-- ИЗБРАННОЕ -->
+        <div class="tab-content" id="favorites">
+            <div class="empty-state" id="favEmpty">
+                <div class="empty-icon">⭐</div>
+                <p>Нет избранных пар</p>
+            </div>
+            <div class="fav-list" id="favList"></div>
+        </div>
+    </div>
+
+    <!-- Модалка выбора валюты -->
+    <div class="modal" id="currencyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Выберите валюту</h3>
+                <button class="close-btn" id="closeModal">✕</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="currencySearch" placeholder="🔍 Поиск по коду, названию или стране...">
+            </div>
+            <div class="currency-type-switch">
+                <button class="type-btn active" data-type="fiat">💵 Валюты</button>
+                <button class="type-btn" data-type="crypto">🪙 Крипта</button>
+            </div>
+            <div class="currency-list" id="currencyList"></div>
+        </div>
+    </div>
+
+    <!-- Модалка алерта -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔔 Новое уведомление</h3>
+                <button class="close-btn" id="closeAlertModal">✕</button>
+            </div>
+            <div class="alert-form">
+                <div class="form-group">
+                    <label>Валюта</label>
+                    <div class="alert-currency" id="alertCurrency">—</div>
+                </div>
+                <div class="form-group">
+                    <label>Условие</label>
+                    <div class="condition-switch">
+                        <button class="cond-btn active" data-cond="above">📈 Выше</button>
+                        <button class="cond-btn" data-cond="below">📉 Ниже</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Целевая цена (в USD)</label>
+                    <input type="number" id="alertTarget" placeholder="100000" step="0.01">
+                </div>
+                <button class="primary-btn" id="saveAlertBtn">Создать уведомление</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка добавления актива -->
+    <div class="modal" id="assetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💼 Добавить актив</h3>
+                <button class="close-btn" id="closeAssetModal">✕</button>
+            </div>
+            <div class="alert-form">
+                <div class="form-group">
+                    <label>Валюта</label>
+                    <button class="currency-selector" id="assetCurrencyBtn">
+                        <span class="currency-icon" id="assetIcon">🇺🇸</span>
+                        <span class="currency-info">
+                            <span class="currency-code" id="assetCode">USD</span>
+                            <span class="currency-name" id="assetName">Доллар США</span>
+                        </span>
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Количество</label>
+                    <input type="number" id="assetAmount" placeholder="0.5" step="0.00000001">
+                </div>
+                <button class="primary-btn" id="saveAssetBtn">Добавить в портфель</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
